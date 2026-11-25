@@ -17,19 +17,26 @@ MAX_CHARS = 140
 OUTPUT_PATH = "/output/entry.txt"
 
 
+def validate(line: str) -> list[str]:
+    """Check one roast line against the bounty gate; empty means valid."""
+    problems: list[str] = []
+    if not line:
+        problems.append("entry is empty")
+    if "\n" in line or "\r" in line:
+        problems.append("entry must be a single line")
+    if len(line) > MAX_CHARS:
+        problems.append(f"entry is {len(line)} chars, over the {MAX_CHARS} cap")
+    if line and not any(ch.isalnum() for ch in line):
+        problems.append("entry has no letters or digits")
+    return problems
+
+
 def main() -> int:
     line = ENTRY.strip()
-    if not line:
-        print("entry is empty", file=sys.stderr)
-        return 1
-    if "\n" in line or "\r" in line:
-        print("entry must be a single line", file=sys.stderr)
-        return 1
-    if len(line) > MAX_CHARS:
-        print(
-            f"entry is {len(line)} chars, over the {MAX_CHARS} cap",
-            file=sys.stderr,
-        )
+    problems = validate(line)
+    if problems:
+        for problem in problems:
+            print(problem, file=sys.stderr)
         return 1
     os.makedirs("/output", exist_ok=True)
     try:
